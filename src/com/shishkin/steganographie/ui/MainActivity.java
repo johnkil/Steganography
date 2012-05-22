@@ -93,7 +93,7 @@ public class MainActivity extends SherlockActivity
 	          * activity starts when receiving a beamed message. For now, this code
 	          * uses the tag dispatch system.
 	          */
-	          // NdefRecord.createApplicationRecord("com.shishkin.steganographie")
+	          // ,NdefRecord.createApplicationRecord("com.shishkin.steganographie")
 	        });
     	} catch (IOException e) {
 			e.printStackTrace();
