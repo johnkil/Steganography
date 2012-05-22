@@ -52,9 +52,7 @@ public class MainActivity extends SherlockActivity {
 			
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(Intent.ACTION_PICK, 
-						android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-				startActivityForResult(intent, SELECT_IMAGE);
+				selectImage();
 			}
 		});
     }
@@ -105,7 +103,13 @@ public class MainActivity extends SherlockActivity {
 		}
 	}
 	
-	public String getPath(Uri uri) {
+	private void selectImage() {
+		Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+		intent.setType("image/*");
+		startActivityForResult(intent, SELECT_IMAGE);
+	}
+	
+	private String getPath(Uri uri) {
 		String[] projection = { MediaStore.Images.Media.DATA };
 		@SuppressWarnings("deprecation")
 		Cursor cursor = managedQuery(uri, projection, null, null, null);
