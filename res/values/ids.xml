@@ -19,6 +19,7 @@
 
 <resources>
 
+    <item name="menu_select_image" type="id"/>
     <item name="menu_encrypt" type="id"/>
     <item name="menu_decrypt" type="id"/>
     <item name="menu_preferences" type="id"/>

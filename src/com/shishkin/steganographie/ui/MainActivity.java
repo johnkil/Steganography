@@ -13,8 +13,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -48,17 +46,13 @@ public class MainActivity extends SherlockActivity {
         setContentView(R.layout.main);
         
         imageView = (ImageView) findViewById(android.R.id.icon);
-        imageView.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				selectImage();
-			}
-		});
     }
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+    	menu.add(Menu.NONE, R.id.menu_select_image, Menu.NONE, R.string.menu_select_image)
+		    .setIcon(R.drawable.ic_action_gallery)
+		    .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		menu.add(Menu.NONE, R.id.menu_encrypt, Menu.NONE, R.string.menu_encrypt)
 		    .setIcon(R.drawable.ic_action_encrypt)
 		    .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
@@ -74,9 +68,12 @@ public class MainActivity extends SherlockActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    switch (item.getItemId()) {
+	        case R.id.menu_select_image:
+	        	selectImage();
+	            break;
 	        case R.id.menu_encrypt:
 	        	encryptImage();
-	            break;
+	        	break;
 	        case R.id.menu_decrypt:
 	        	decryptImage();
 	        	break;
@@ -103,6 +100,10 @@ public class MainActivity extends SherlockActivity {
 		}
 	}
 	
+	/**
+	 * Select Image from SD card
+	 * (http://stackoverflow.com/questions/2507898/how-to-pick-a-image-from-gallery-sd-card-for-my-app-in-android)
+	 */
 	private void selectImage() {
 		Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
 		intent.setType("image/*");
