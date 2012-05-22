@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <ListPreference
+        android:defaultValue="lsb"
+        android:entries="@array/methods"
+        android:entryValues="@array/methodsValues"
+        android:key="encryptionMethodPref"
+        android:summary="Selecte encryption method"
+        android:title="Encryption method" />
+    <ListPreference
+        android:defaultValue="lsb"
+        android:entries="@array/methods"
+        android:entryValues="@array/methodsValues"
+        android:key="decryptionMethodPref"
+        android:summary="Selecte decryption method"
+        android:title="Decryption method" />
+
+    <EditTextPreference
+        android:name="Message"
+        android:defaultValue=""
+        android:key="messagePref"
+        android:summary="Enter message to send"
+        android:title="Message" />
+    <EditTextPreference
+        android:name="Key"
+        android:defaultValue=""
+        android:key="keyPref"
+        android:summary="Enter key to encrypt messages"
+        android:title="Key" />
+
+</PreferenceScreen>

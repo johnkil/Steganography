@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="methods">
+        <item>LSB (Least Significant Bit)</item>
+        <item>Palette Extension</item>
+    </string-array>
+    
+    <string-array name="methodsValues">
+        <item>lsb</item>
+        <item>palette_extension</item>
+    </string-array>
+
+</resources>
