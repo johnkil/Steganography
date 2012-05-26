@@ -3,6 +3,8 @@ Steganography
 
 Steganography is the art and science of writing hidden messages in such a way that no one, apart from the sender and intended recipient, suspects the existence of the message, a form of security through obscurity.
 
+![Example Image][1]![Example Image][2]![Example Image][3]
+
 Developed By
 ============
 
@@ -25,4 +27,6 @@ License
     See the License for the specific language governing permissions and
     limitations under the License.
 
-[1]: http://s18.postimage.org/9s9kehceh/device_2012_05_16_015536.png
+[1]: http://s1.ipicture.ru/uploads/20120526/fbzgxzB6.png
+[2]: http://s1.ipicture.ru/uploads/20120526/Tdjvhh3Q.png
+[3]: http://s1.ipicture.ru/uploads/20120526/ybZi99wC.png
