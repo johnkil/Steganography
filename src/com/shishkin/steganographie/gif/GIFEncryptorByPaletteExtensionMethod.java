@@ -13,6 +13,7 @@ import com.shishkin.steganographie.UnableToDecodeException;
 import com.shishkin.steganographie.UnableToEncodeException;
 
 /**
+ * Class GIF image encryptor using the method of extended palette.
  * 
  * @author e.shishkin
  *

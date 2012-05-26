@@ -41,6 +41,7 @@ import com.shishkin.steganographie.gif.GIFEncryptorByLSBMethod;
 import com.shishkin.steganographie.gif.GIFEncryptorByPaletteExtensionMethod;
 
 /**
+ * Starting activity of the application displays the basic data.
  * 
  * @author e.shishkin
  *
@@ -155,7 +156,11 @@ public class MainActivity extends SherlockActivity
 				image.getParentFile().mkdirs();
 			}
 	        FileOutputStream fos = new FileOutputStream(image);
-	        fos.write(bytes);
+	        try {
+	        	fos.write(bytes);
+	        } finally {
+	        	fos.close();
+	        }
 	        imageView.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
         } catch (IOException e) {
 			e.printStackTrace();
@@ -198,10 +203,10 @@ public class MainActivity extends SherlockActivity
 	        	selectImage();
 	            break;
 	        case R.id.menu_encrypt:
-	        	encryptImage();
+	        	encryptImage(image);
 	        	break;
 	        case R.id.menu_decrypt:
-	        	decryptImage();
+	        	decryptImage(image);
 	        	break;
 	        case R.id.menu_preferences:
 	        	invokePreferencesActivity();
@@ -243,9 +248,14 @@ public class MainActivity extends SherlockActivity
 		startActivityForResult(intent, SELECT_IMAGE);
 	}
 	
+	/**
+	 * Convert URI to image path.
+	 * 
+	 * @param uri
+	 * @return image path
+	 */
 	private String getPath(Uri uri) {
 		String[] projection = { MediaStore.Images.Media.DATA };
-		@SuppressWarnings("deprecation")
 		Cursor cursor = managedQuery(uri, projection, null, null, null);
 		int column_index = cursor
 				.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
@@ -253,11 +263,19 @@ public class MainActivity extends SherlockActivity
 		return cursor.getString(column_index);
 	}
 	
+	/**
+	 * Start Preference activity to display the settings.
+	 */
 	private void invokePreferencesActivity() {
 		startActivity(new Intent(this, PreferencesActivity.class));
 	}
 	
-	private void encryptImage() {
+	/**
+	 * Formation of steganographic messages using selected encryption method.
+	 * 
+	 * @param image
+	 */
+	private void encryptImage(File image) {
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 		Encryptor encryptor = preferences.getString("encryptionMethodPref", "lsb").equals("lsb") ? 
 				new GIFEncryptorByLSBMethod() : new GIFEncryptorByPaletteExtensionMethod();
@@ -280,7 +298,13 @@ public class MainActivity extends SherlockActivity
 		}
 	}
 	
-	private void decryptImage() {
+	/**
+	 * Decrypt steganographic messages using selected encryption 
+	 * method and display the encrypted message.
+	 * 
+	 * @param image
+	 */
+	private void decryptImage(File image) {
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 		Encryptor encryptor = preferences.getString("encryptionMethodPref", "lsb").equals("lsb") ? 
 				new GIFEncryptorByLSBMethod() : new GIFEncryptorByPaletteExtensionMethod();
