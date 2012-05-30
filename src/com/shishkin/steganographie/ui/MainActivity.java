@@ -28,7 +28,9 @@ import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
@@ -41,6 +43,7 @@ import com.shishkin.steganographie.UnableToDecodeException;
 import com.shishkin.steganographie.UnableToEncodeException;
 import com.shishkin.steganographie.crypto.AESCrypto;
 import com.shishkin.steganographie.crypto.ICrypto;
+import com.shishkin.steganographie.gif.EncryptingFileParameters;
 import com.shishkin.steganographie.gif.GIFEncryptorByLSBMethod;
 import com.shishkin.steganographie.gif.GIFEncryptorByPaletteExtensionMethod;
 import com.shishkin.steganographie.zip.ICompressor;
@@ -60,6 +63,8 @@ public class MainActivity extends SherlockActivity
 	private static final int MESSAGE_SENT = 1;
 	
 	private ImageView imageView;
+	private TextView textView;
+	
 	private File image;
 	
 	private NfcAdapter mNfcAdapter;
@@ -72,6 +77,7 @@ public class MainActivity extends SherlockActivity
         setContentView(R.layout.main);
         
         imageView = (ImageView) findViewById(android.R.id.icon);
+        textView = (TextView) findViewById(android.R.id.text1);
         
 		// Check for available NFC Adapter
 		mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
@@ -252,6 +258,7 @@ public class MainActivity extends SherlockActivity
 			Bitmap bitmap = BitmapFactory.decodeFile(selectedImagePath);
 			imageView.setImageBitmap(bitmap);
 			image = new File(selectedImagePath);
+			updatePossibleTextLength();
 		}
 	}
 	
@@ -279,6 +286,27 @@ public class MainActivity extends SherlockActivity
 				.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
 		cursor.moveToFirst();
 		return cursor.getString(column_index);
+	}
+	/**
+	 * Update Possible Text Length. Called when changing graphics container.
+	 */
+	@SuppressWarnings("static-access")
+	private void updatePossibleTextLength() {
+		Log.v(LOG_TAG, "updatePossibleTextLength() called");
+		EncryptingFileParameters params = null;
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		try {
+			if (preferences.getString("encryptionMethodPref", "lsb").equals("lsb")) {
+				params = new GIFEncryptorByLSBMethod().getEncryptingFileParameters(image);
+			} else {
+				params = new GIFEncryptorByPaletteExtensionMethod().getEncryptingFileParameters(image);
+			}
+			textView.setText(String.format("Possible message length: %d", params.getPossibleTextLength()));
+			textView.setVisibility(View.VISIBLE);
+		} catch (Exception e) {
+			Log.w(LOG_TAG, e);
+			textView.setVisibility(View.INVISIBLE);
+		}
 	}
 	
 	/**
