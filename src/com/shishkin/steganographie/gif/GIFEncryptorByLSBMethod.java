@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.shishkin.steganographie.Binary;
-import com.shishkin.steganographie.Encryptor;
+import com.shishkin.steganographie.IEncryptor;
 import com.shishkin.steganographie.UnableToDecodeException;
 import com.shishkin.steganographie.UnableToEncodeException;
 
@@ -18,21 +18,21 @@ import com.shishkin.steganographie.UnableToEncodeException;
  * @author e.shishkin
  *
  */
-public class GIFEncryptorByLSBMethod implements Encryptor {
+public class GIFEncryptorByLSBMethod implements IEncryptor {
 	
 	protected byte[] checkSequence = new byte[]{0,1,0,1,0,1,0,1};
 	protected int firstLSBit = 0;
 	protected int secondLSBit = 1;
 	
 	@Override
-	public void encrypt(File in, File out, String text) throws UnableToEncodeException, NullPointerException, IOException {
+	public void encrypt(File in, File out, byte[] data) throws UnableToEncodeException, NullPointerException, IOException {
 		if (in == null) {
 			throw new NullPointerException("Input file is null");
 		}
 		if (out == null) {
 			throw new NullPointerException("Output file is null");
 		}
-		if (text == null) {
+		if (data == null) {
 			throw new NullPointerException("Text is null");
 		}
 		
@@ -56,7 +56,7 @@ public class GIFEncryptorByLSBMethod implements Encryptor {
 		int possibleMessageLength = bOrigColorCount*3/4;
 		int possibleTextLength = possibleMessageLength-2;// one byte for check and one byte for message length
 		
-		if (possibleTextLength < text.length()) {
+		if (possibleTextLength < data.length) {
 			throw new UnableToEncodeException("Text is too big");
 		}
 		
@@ -72,7 +72,7 @@ public class GIFEncryptorByLSBMethod implements Encryptor {
 		}
 		
 		// write text length
-		byte[] cl = Binary.toBitArray((byte)text.length());
+		byte[] cl = Binary.toBitArray((byte)data.length);
 		for (int i = 0; i < cl.length/2; i++) {
 			byte[] ba = Binary.toBitArray(bytes[n]);
 			ba[firstLSBit] = cl[2*i];
@@ -82,7 +82,7 @@ public class GIFEncryptorByLSBMethod implements Encryptor {
 		}
 		
 		// write message
-		byte[] textBytes = text.getBytes();
+		byte[] textBytes = data;
 		for (int i = 0; i < textBytes.length; i++) {
 			byte[] c = Binary.toBitArray(textBytes[i]);
 			for (int ci = 0; ci < c.length/2; ci++) {
@@ -101,7 +101,7 @@ public class GIFEncryptorByLSBMethod implements Encryptor {
 	}
 	
 	@Override
-	public String decrypt(File in) throws UnableToDecodeException, NullPointerException, IOException {
+	public byte[] decrypt(File in) throws UnableToDecodeException, NullPointerException, IOException {
 		if (in == null) {
 			throw new NullPointerException("Input file is null");
 		}
@@ -172,9 +172,18 @@ public class GIFEncryptorByLSBMethod implements Encryptor {
 			bt[i] = Binary.toByte(bc);
 		}
 		
-		return new String(bt);
+		return bt;
 	}
 	
+	/**
+	 * Calculate encrypting file parameters.
+	 * 
+	 * @param f - file
+	 * @return encrypting file parameters
+	 * @throws UnableToEncodeException
+	 * @throws NullPointerException
+	 * @throws IOException
+	 */
 	public static EncryptingFileParameters getEncryptingFileParameters(File f) throws UnableToEncodeException, NullPointerException, IOException {
 		if (f == null) {
 			throw new NullPointerException("Input file is null");

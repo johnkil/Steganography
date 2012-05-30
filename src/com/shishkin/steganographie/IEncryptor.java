@@ -10,7 +10,7 @@ import java.io.IOException;
  * @author e.shishkin
  *
  */
-public interface Encryptor {
+public interface IEncryptor {
 	
 	/**
 	 * Encrypt of the message in picture.
@@ -22,7 +22,7 @@ public interface Encryptor {
 	 * @throws UnableToEncodeException
 	 * @throws IOException
 	 */
-	public void encrypt(File in, File out, String text) throws UnableToEncodeException, IOException;
+	public void encrypt(File in, File out, byte[] data) throws UnableToEncodeException, IOException;
 	
 	/**
 	 * Decrypt of the message in picture.
@@ -33,6 +33,6 @@ public interface Encryptor {
 	 * @throws UnableToDecodeException
 	 * @throws IOException
 	 */
-	public String decrypt(File in) throws UnableToDecodeException, IOException;
+	public byte[] decrypt(File in) throws UnableToDecodeException, IOException;
 	
 }

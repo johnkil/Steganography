@@ -5,7 +5,6 @@
         <item>LSB (Least Significant Bit)</item>
         <item>Palette Extension</item>
     </string-array>
-    
     <string-array name="methodsValues">
         <item>lsb</item>
         <item>palette_extension</item>

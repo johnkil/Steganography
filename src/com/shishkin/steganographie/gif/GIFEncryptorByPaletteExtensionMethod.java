@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.shishkin.steganographie.Binary;
-import com.shishkin.steganographie.Encryptor;
+import com.shishkin.steganographie.IEncryptor;
 import com.shishkin.steganographie.UnableToDecodeException;
 import com.shishkin.steganographie.UnableToEncodeException;
 
@@ -18,19 +18,19 @@ import com.shishkin.steganographie.UnableToEncodeException;
  * @author e.shishkin
  *
  */
-public class GIFEncryptorByPaletteExtensionMethod implements Encryptor {
+public class GIFEncryptorByPaletteExtensionMethod implements IEncryptor {
 	
 	protected byte[] checkSequence = new byte[]{0,1,0,1,0,1,0,1};
 	
 	@Override
-	public void encrypt(File in, File out, String text) throws UnableToEncodeException, IOException, NullPointerException {
+	public void encrypt(File in, File out, byte[] data) throws UnableToEncodeException, IOException, NullPointerException {
 		if (in == null) {
 			throw new NullPointerException("Input file is null");
 		}
 		if (out == null) {
 			throw new NullPointerException("Output file is null");
 		}
-		if (text == null) {
+		if (data == null) {
 			throw new NullPointerException("Text is null");
 		}
 		
@@ -60,13 +60,13 @@ public class GIFEncryptorByPaletteExtensionMethod implements Encryptor {
 		int newBsize = bsize;
 		int possibleMessageLength = (int)(Math.pow(2, newBsize+1) - bOrigColorCount)*3;
 		int possibleTextLength = possibleMessageLength-3;	// one byte for check and two bytes for message length
-		while ( (newBsize < 7) && (possibleTextLength < text.length()) ) {
+		while ( (newBsize < 7) && (possibleTextLength < data.length) ) {
 			newBsize++;
 			possibleMessageLength = (int)(Math.pow(2, newBsize+1) - bOrigColorCount)*3;
 			possibleTextLength = possibleMessageLength-3;
 		}
 		
-		if (possibleTextLength < text.length()) {		
+		if (possibleTextLength < data.length) {		
 			throw new UnableToEncodeException("Text is too big. Max text lenght for this image is " + possibleTextLength);
 		}
 		
@@ -81,7 +81,7 @@ public class GIFEncryptorByPaletteExtensionMethod implements Encryptor {
 		byte[] messageArray = new byte[possibleMessageLength];
 		
 		// create bit array from text length value and divide it into two arrays
-		byte[] lengthBytes = Binary.toBitArray((short)text.length());
+		byte[] lengthBytes = Binary.toBitArray((short)data.length);
 		byte[] lowTextLengthByte = Binary.subarray(lengthBytes, 0, 8);
 		byte[] highTextLengthByte = Binary.subarray(lengthBytes, 8, 8);
 		
@@ -91,8 +91,8 @@ public class GIFEncryptorByPaletteExtensionMethod implements Encryptor {
 		messageArray[possibleMessageLength-3] = Binary.toByte(lowTextLengthByte);
 		
 		// write text bytes
-		byte[] textBytes = text.getBytes();
-		for (int i = 0; i < text.length(); i++) {
+		byte[] textBytes = data;
+		for (int i = 0; i < data.length; i++) {
 			messageArray[messageArray.length-i-4] = textBytes[i];
 		}
 		
@@ -109,7 +109,7 @@ public class GIFEncryptorByPaletteExtensionMethod implements Encryptor {
 	}
 	
 	@Override
-	public String decrypt(File in) throws UnableToDecodeException, IOException, NullPointerException {
+	public byte[] decrypt(File in) throws UnableToDecodeException, IOException, NullPointerException {
 		if (in == null) {
 			throw new NullPointerException("Input file is null");
 		}
@@ -160,9 +160,18 @@ public class GIFEncryptorByPaletteExtensionMethod implements Encryptor {
 			bt[i] = bytes[n + bOrigColorCount*3-1 - i - 3];
 		}
 		
-		return new String(bt);
+		return bt;
 	}
 	
+	/**
+	 * Calculate encrypting file parameters.
+	 * 
+	 * @param f - file
+	 * @return encrypting file parameters
+	 * @throws UnableToEncodeException
+	 * @throws NullPointerException
+	 * @throws IOException
+	 */
 	public static EncryptingFileParameters getEncryptingFileParameters(File f) throws UnableToEncodeException, NullPointerException, IOException {
 		if (f == null) {
 			throw new NullPointerException("Input file is null");

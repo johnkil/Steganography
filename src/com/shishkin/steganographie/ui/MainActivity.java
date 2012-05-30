@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.security.GeneralSecurityException;
 
 import org.apache.commons.io.FileUtils;
 
@@ -26,19 +27,24 @@ import android.os.Message;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-import com.shishkin.steganographie.Encryptor;
+import com.shishkin.steganographie.IEncryptor;
 import com.shishkin.steganographie.Parameters;
 import com.shishkin.steganographie.R;
 import com.shishkin.steganographie.UnableToDecodeException;
 import com.shishkin.steganographie.UnableToEncodeException;
+import com.shishkin.steganographie.crypto.AESCrypto;
+import com.shishkin.steganographie.crypto.ICrypto;
 import com.shishkin.steganographie.gif.GIFEncryptorByLSBMethod;
 import com.shishkin.steganographie.gif.GIFEncryptorByPaletteExtensionMethod;
+import com.shishkin.steganographie.zip.ICompressor;
+import com.shishkin.steganographie.zip.StringCompressor;
 
 /**
  * Starting activity of the application displays the basic data.
@@ -48,6 +54,7 @@ import com.shishkin.steganographie.gif.GIFEncryptorByPaletteExtensionMethod;
  */
 public class MainActivity extends SherlockActivity 
 		implements CreateNdefMessageCallback, OnNdefPushCompleteCallback {
+	private static final String LOG_TAG = MainActivity.class.getSimpleName();
 	
 	private static final int SELECT_IMAGE = 0;
 	private static final int MESSAGE_SENT = 1;
@@ -60,6 +67,7 @@ public class MainActivity extends SherlockActivity
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
+    	Log.v(LOG_TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
@@ -81,6 +89,7 @@ public class MainActivity extends SherlockActivity
      */
     @Override
     public NdefMessage createNdefMessage(NfcEvent event) {
+    	Log.v(LOG_TAG, "createNdefMessage() called");
     	NdefMessage msg = null;
     	try {
 	        msg = new NdefMessage(
@@ -107,6 +116,7 @@ public class MainActivity extends SherlockActivity
      */
     @Override
     public void onNdefPushComplete(NfcEvent arg0) {
+    	Log.v(LOG_TAG, "onNdefPushComplete() called");
         // A handler is needed to send messages to the activity when this
         // callback occurs, because it happens from a binder thread
         mHandler.obtainMessage(MESSAGE_SENT).sendToTarget();
@@ -126,6 +136,7 @@ public class MainActivity extends SherlockActivity
     
     @Override
     public void onResume() {
+    	Log.v(LOG_TAG, "onResume() called");
         super.onResume();
         // Check to see that the Activity started due to an Android Beam
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction())) {
@@ -135,6 +146,7 @@ public class MainActivity extends SherlockActivity
 
     @Override
     public void onNewIntent(Intent intent) {
+    	Log.v(LOG_TAG, "onNewIntent() called");
         // onResume gets called after this to handle the intent
         setIntent(intent);
     }
@@ -143,6 +155,7 @@ public class MainActivity extends SherlockActivity
      * Parses the NDEF Message from the intent and prints to the TextView
      */
     void processIntent(Intent intent) {
+    	Log.v(LOG_TAG, "processIntent() called");
         Parcelable[] rawMsgs = intent.getParcelableArrayExtra(
                 NfcAdapter.EXTRA_NDEF_MESSAGES);
         // only one message sent during the beam
@@ -173,6 +186,7 @@ public class MainActivity extends SherlockActivity
      * @param mimeType
      */
     public NdefRecord createMimeRecord(String mimeType, byte[] payload) {
+    	Log.v(LOG_TAG, "createMimeRecord() called");
         byte[] mimeBytes = mimeType.getBytes(Charset.forName("US-ASCII"));
         NdefRecord mimeRecord = new NdefRecord(
                 NdefRecord.TNF_MIME_MEDIA, mimeBytes, new byte[0], payload);
@@ -181,6 +195,7 @@ public class MainActivity extends SherlockActivity
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+    	Log.v(LOG_TAG, "onCreateOptionsMenu() called");
     	menu.add(Menu.NONE, R.id.menu_select_image, Menu.NONE, R.string.menu_select_image)
 		    .setIcon(R.drawable.ic_action_gallery)
 		    .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
@@ -198,15 +213,16 @@ public class MainActivity extends SherlockActivity
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		Log.v(LOG_TAG, "onOptionsItemSelected() called");
 	    switch (item.getItemId()) {
 	        case R.id.menu_select_image:
 	        	selectImage();
 	            break;
 	        case R.id.menu_encrypt:
-	        	encryptImage(image);
+	        	encryptImage();
 	        	break;
 	        case R.id.menu_decrypt:
-	        	decryptImage(image);
+	        	decryptImage();
 	        	break;
 	        case R.id.menu_preferences:
 	        	invokePreferencesActivity();
@@ -220,6 +236,7 @@ public class MainActivity extends SherlockActivity
     
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		Log.v(LOG_TAG, "onActivityResult() called");
 		super.onActivityResult(requestCode, resultCode, data);
 		
 		if (requestCode == SELECT_IMAGE && resultCode == RESULT_OK) {
@@ -243,6 +260,7 @@ public class MainActivity extends SherlockActivity
 	 * (http://stackoverflow.com/questions/2507898/how-to-pick-a-image-from-gallery-sd-card-for-my-app-in-android)
 	 */
 	private void selectImage() {
+		Log.v(LOG_TAG, "selectImage() called");
 		Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
 		intent.setType("image/*");
 		startActivityForResult(intent, SELECT_IMAGE);
@@ -267,56 +285,82 @@ public class MainActivity extends SherlockActivity
 	 * Start Preference activity to display the settings.
 	 */
 	private void invokePreferencesActivity() {
+		Log.v(LOG_TAG, "invokePreferencesActivity() called");
 		startActivity(new Intent(this, PreferencesActivity.class));
 	}
 	
 	/**
 	 * Formation of steganographic messages using selected encryption method.
-	 * 
-	 * @param image
 	 */
-	private void encryptImage(File image) {
+	private void encryptImage() {
+		Log.v(LOG_TAG, "encryptImage() called");
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		Encryptor encryptor = preferences.getString("encryptionMethodPref", "lsb").equals("lsb") ? 
+		IEncryptor encryptor = preferences.getString("encryptionMethodPref", "lsb").equals("lsb") ? 
 				new GIFEncryptorByLSBMethod() : new GIFEncryptorByPaletteExtensionMethod();
+		ICompressor compressor = new StringCompressor();
+		ICrypto crypto = new AESCrypto();
+		// obtaining the original message
 		String message = preferences.getString("messagePref", "");
+		// obtaining the encryption key
+		String key = preferences.getString("keyPref", "");
 		try {
+			// encrypt the original message
+			byte[] encryptedData = crypto.encrypt(compressor.compress(message.getBytes()), key);
 			File out = new File(Environment.getExternalStorageDirectory() + "/Steganography/" + image.getName());
 			if (!out.getParentFile().exists()) {
 				out.getParentFile().mkdirs();
 			}
-			encryptor.encrypt(image, out, message);
+			// introduction of an encrypted message to the graphics container
+			encryptor.encrypt(image, out, encryptedData);
 			imageView.setImageBitmap(BitmapFactory.decodeFile(out.getPath()));
 			image = out;
 			Toast.makeText(this, Parameters.MESSAGE_ENCRYPTION_COMPLETED, Toast.LENGTH_LONG).show();
 		} catch (UnableToEncodeException e) {
 			Toast.makeText(this, Parameters.MESSAGE_ENCRYPTION_ERROR, Toast.LENGTH_LONG).show();
+			Log.w(LOG_TAG, e);
 		} catch (IOException e) {
 			Toast.makeText(this, Parameters.MESSAGE_IO_ERROR, Toast.LENGTH_LONG).show();
+			Log.w(LOG_TAG, e);
 		} catch (NullPointerException e) {
 			Toast.makeText(this, Parameters.MESSAGE_UNEXPECTED_ERROR, Toast.LENGTH_LONG).show();
+			Log.w(LOG_TAG, e);
+		} catch (GeneralSecurityException e) {
+			Toast.makeText(this, Parameters.MESSAGE_ENCRYPTION_ERROR, Toast.LENGTH_LONG).show();
+			Log.w(LOG_TAG, e);
 		}
 	}
 	
 	/**
 	 * Decrypt steganographic messages using selected encryption 
 	 * method and display the encrypted message.
-	 * 
-	 * @param image
 	 */
-	private void decryptImage(File image) {
+	private void decryptImage() {
+		Log.v(LOG_TAG, "decryptImage() called");
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		Encryptor encryptor = preferences.getString("encryptionMethodPref", "lsb").equals("lsb") ? 
+		IEncryptor encryptor = preferences.getString("encryptionMethodPref", "lsb").equals("lsb") ? 
 				new GIFEncryptorByLSBMethod() : new GIFEncryptorByPaletteExtensionMethod();
+		ICompressor compressor = new StringCompressor();
+		ICrypto crypto = new AESCrypto();
+		// obtaining the encryption key
+		String key = preferences.getString("keyPref", "");
 		try {
-			String message = encryptor.decrypt(image);
-			Toast.makeText(this, "decrypted message: " + message, Toast.LENGTH_LONG).show();
+			// extracting hidden data from the image
+			byte[] data = encryptor.decrypt(image);
+			// decoding of hidden data
+			String decryptedMsg = new String(compressor.decompress(crypto.decrypt(data, key)));
+			Toast.makeText(this, "decrypted message: " + decryptedMsg, Toast.LENGTH_LONG).show();
 		} catch (UnableToDecodeException e) {
 			Toast.makeText(this, Parameters.MESSAGE_DECRYPTION_ERROR, Toast.LENGTH_LONG).show();
+			Log.w(LOG_TAG, e);
 		} catch (IOException e) {
 			Toast.makeText(this, Parameters.MESSAGE_IO_ERROR, Toast.LENGTH_LONG).show();
+			Log.w(LOG_TAG, e);
 		} catch (NullPointerException e) {
 			Toast.makeText(this, Parameters.MESSAGE_UNEXPECTED_ERROR, Toast.LENGTH_LONG).show();
+			Log.w(LOG_TAG, e);
+		} catch (GeneralSecurityException e) {
+			Toast.makeText(this, Parameters.MESSAGE_DECRYPTION_ERROR, Toast.LENGTH_LONG).show();
+			Log.w(LOG_TAG, e);
 		}
 	}
 	
