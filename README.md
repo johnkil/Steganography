@@ -1,9 +1,20 @@
 Steganography
 =============
-
 Steganography is the art and science of writing hidden messages in such a way that no one, apart from the sender and intended recipient, suspects the existence of the message, a form of security through obscurity.
 
-![Example Image][1]![Example Image][2]![Example Image][3]
+![Logo][0]
+
+Description
+-----------
+
+This application is available on Google Play:
+
+<a href="http://play.google.com/store/apps/details?id=com.shishkin.steganographie">
+  <img alt="Get it on Google Play"
+       src="http://www.android.com/images/brand/get_it_on_play_logo_small.png" />
+</a>
+
+![Example Image][1]![Example Image][2]
 
 Developed By
 ------------
@@ -26,6 +37,6 @@ License
     See the License for the specific language governing permissions and
     limitations under the License.
 
-[1]: http://s1.ipicture.ru/uploads/20120526/fbzgxzB6.png
-[2]: http://s1.ipicture.ru/uploads/20120526/Tdjvhh3Q.png
-[3]: http://s1.ipicture.ru/uploads/20120526/ybZi99wC.png
+[0]: https://lh5.ggpht.com/VZ_x7tjxBVn4GZaRD7uz0Wdxa42pS28br0II-G2u8X9kD75nhSWhq-ZkQRgn0ub36Ywn=w705
+[1]: https://lh5.ggpht.com/f7_DEXe6gTo3KkmwyP7ew9Bpv3PdwF2wFS2E7-OcRMUDeiEL7-mjyqY5RKfnQ-zc7w
+[2]: https://lh6.ggpht.com/xwiA-ZXtFjeQXVoSs4oexwyfeN9UuHjPi7hY-ox-B5oa8hpKR2d3xmB4i36qF9QwBg
