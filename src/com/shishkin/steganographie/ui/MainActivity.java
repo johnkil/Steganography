@@ -83,6 +83,7 @@ public class MainActivity extends SherlockActivity
 		mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 		if (mNfcAdapter == null) {
 			Toast.makeText(this, "NFC is not available on this device", Toast.LENGTH_LONG).show();
+			return;
 		}
 		// Register callback to set NDEF message
 		mNfcAdapter.setNdefPushMessageCallback(this, this);
